@@ -20,7 +20,7 @@ import {
     Assignment as DocumentIcon,
 } from "@mui/icons-material";
 import { useNavigate } from "react-router-dom";
-import { HOST_API } from "../../env";
+import { HOST_API } from "../env";
 import ClientDetail from "../components/ClientDetail";
 import BCVDay from "./BCVDay";
 import authService from "../services/AuthService";

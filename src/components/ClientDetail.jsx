@@ -139,7 +139,6 @@ const ClientDetail = ({ client, onNewSearch, setClients, api }) => {
             });
 
             showSnackbar("Comprobante enviado al cliente correctamente");
-            await refreshClientData();
         } catch (error) {
             console.error("Error enviando el comprobante:", error);
             showSnackbar("Error al enviar el comprobante", "error");

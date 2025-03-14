@@ -1,5 +1,5 @@
 import axios from "axios";
-import { HOST_API } from "../../env";
+import { HOST_API } from "../env";
 
 const authService = {
     login: async (username, password) => {
