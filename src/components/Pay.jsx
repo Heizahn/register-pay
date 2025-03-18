@@ -15,7 +15,7 @@ import {
 } from "@mui/material";
 import { useEffect, useState } from "react";
 import { AttachMoney as AttachMoneyIcon } from "@mui/icons-material";
-import { getBsToUsd, getUsdToBs } from "../auxiliar/auxFunctions";
+import { getBsToUsd, getInvoices, getUsdToBs } from "../auxiliar/auxFunctions";
 import authService from "../services/AuthService";
 import axios from "axios";
 
@@ -25,12 +25,12 @@ export default function Pay({
     handleClosePaymentModal,
     showSnackbar,
     refreshClientData,
-    api,
 }) {
     const [sendingPayment, setSendingPayment] = useState(false);
     const [loadingBsToUsd, setLoadingBsToUsd] = useState(false);
     const [loadingUsdToBs, setLoadingUsdToBs] = useState(false);
     const [profiles, setProfiles] = useState([]);
+    const [invoices, setInvoices] = useState([]);
 
     // Estado para formulario de pago
     const [paymentData, setPaymentData] = useState({
@@ -41,6 +41,7 @@ export default function Pay({
         montoRef: "",
         montoBs: "",
         reciboPor: "",
+        facturaId: "",
     });
 
     const handleCancel = () => {
@@ -52,6 +53,7 @@ export default function Pay({
             montoRef: "",
             montoBs: "",
             reciboPor: "",
+            facturaId: "",
         });
     };
 
@@ -105,14 +107,16 @@ export default function Pay({
                 tipoPago: paymentData.tipoPago,
                 clientesId: client.id,
                 referencia: paymentData.referencia,
+                facturaId: paymentData.facturaId,
             };
 
             if (paymentData.comentario) {
                 Payment.comentario = paymentData.comentario;
             }
 
+            console.log(Payment);
             // Aquí iría la llamada a la API para guardar el pago
-            await axios.post(`${api}/paysClient0`, Payment);
+            // await axios.post(`${client.api}/paysClient0`, Payment);
 
             showSnackbar("Pago registrado correctamente");
             handleCancel();
@@ -129,7 +133,9 @@ export default function Pay({
 
     useEffect(() => {
         authService.profiles().then((profiles) => setProfiles(profiles));
-    }, []);
+
+        getInvoices(client.id).then((invoices) => setInvoices(invoices));
+    }, [client.id]);
     return (
         <Dialog
             open={paymentModalOpen}
@@ -144,6 +150,35 @@ export default function Pay({
                 </DialogContentText>
 
                 <Grid container spacing={2}>
+                    <Grid item xs={12}>
+                        <FormControl fullWidth margin="dense">
+                            <InputLabel id="factura-id-label">
+                                Factura
+                            </InputLabel>
+                            <Select
+                                labelId="factura-id-label"
+                                id="facturaId"
+                                value={paymentData.facturaId}
+                                label="Factura"
+                                onChange={(e) =>
+                                    setPaymentData({
+                                        ...paymentData,
+                                        facturaId: e.target.value,
+                                    })
+                                }
+                            >
+                                {invoices.map((invoice) => (
+                                    <MenuItem
+                                        key={invoice.id}
+                                        value={invoice.id}
+                                    >
+                                        {invoice.motivo} - Deuda:{" "}
+                                        {invoice.deuda.toFixed(2)}
+                                    </MenuItem>
+                                ))}
+                            </Select>
+                        </FormControl>
+                    </Grid>
                     <Grid item xs={12} sm={6}>
                         <Button
                             variant="contained"

@@ -29,11 +29,9 @@ import { getClient } from "../auxiliar/auxFunctions";
 const SearchClient = () => {
     const [identificacion, setIdentificacion] = useState("");
     const [loading, setLoading] = useState(false);
-    const [clients, setClients] = useState(null);
-    const [api, setApi] = useState("");
+    const [clients, setClients] = useState([]);
     const [error, setError] = useState("");
     const [searching, setSearching] = useState(false);
-    const apis = [HOST_API, "http://localhost:3000"];
 
     const navigate = useNavigate();
 
@@ -47,30 +45,22 @@ const SearchClient = () => {
 
         setLoading(true);
         setSearching(true);
-        setClients(null);
+        setClients([]);
         setError("");
 
         try {
-            for (const host of apis) {
-                const response = await getClient(identificacion, host);
+            const response = await getClient(identificacion);
 
-                if (!response.url) {
-                    continue;
-                }
-
-                if (response.data && response.data.length > 0) {
-                    setClients(response.data);
-                    setApi(response.url);
-                    return;
-                }
+            if (response.length === 0) {
+                setError("No se encontraron clientes con esa identificación");
+                return;
             }
 
-            setError("No se encontraron clientes con esa identificación");
+            setClients(response);
         } catch (error) {
             console.error("Error al buscar cliente:", error);
 
             if (error.response?.status === 401) {
-                // Si hay error de autenticación, redirigir al login
                 localStorage.removeItem("token");
                 navigate("/login");
             } else {
@@ -86,7 +76,7 @@ const SearchClient = () => {
 
     const handleClear = () => {
         setIdentificacion("");
-        setClients(null);
+        setClients([]);
         setError("");
         setSearching(false);
     };
@@ -231,7 +221,6 @@ const SearchClient = () => {
                             client={client}
                             onNewSearch={handleClear}
                             setClients={setClients}
-                            api={api}
                         />
                     ))}
             </Container>

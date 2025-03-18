@@ -226,9 +226,7 @@ const ClientDetail = ({ client, onNewSearch, setClients, api }) => {
                         <Grid item xs={12} sm={6}>
                             <Typography variant="body2" color="text.secondary">
                                 <strong>Sector:</strong>{" "}
-                                {typeof client.sector === "string"
-                                    ? client.sector
-                                    : client.sectores.nombre || "No asignado"}
+                                {client.sectores.nombre || "No asignado"}
                             </Typography>
                         </Grid>
 
@@ -239,21 +237,22 @@ const ClientDetail = ({ client, onNewSearch, setClients, api }) => {
                                     sx={{ mr: 1, verticalAlign: "middle" }}
                                 />
                                 <strong>Router:</strong>{" "}
-                                {client.routers.nombre || "No asignado"}
+                                {client.routers?.nombre || "No asignado"}
                             </Typography>
                         </Grid>
 
                         <Grid item xs={12} sm={6}>
                             <Typography variant="body2" color="text.secondary">
                                 <strong>IPV4:</strong>{" "}
-                                {(
+                                {(client.ipv4 && (
                                     <Link
                                         href={`http://${client.ipv4}`}
                                         target="_blank"
                                     >
                                         {client.ipv4}
                                     </Link>
-                                ) || "No asignada"}
+                                )) ||
+                                    "No asignada"}
                             </Typography>
                         </Grid>
                     </Grid>
