@@ -37,6 +37,7 @@ import {
 } from "@mui/icons-material";
 import axios from "axios";
 import Pay from "./Pay";
+import { getClient } from "../auxiliar/auxFunctions";
 
 const ClientDetail = ({ client, onNewSearch, setClients, api }) => {
     // Estados para modales
@@ -54,13 +55,9 @@ const ClientDetail = ({ client, onNewSearch, setClients, api }) => {
 
     const refreshClientData = async () => {
         try {
-            const response = await axios.get(
-                `${api}/clientByIdentity/${client.identificacion}`
-            );
+            const response = await getClient(client.identificacion);
 
-            if (response.data && response.data.length > 0) {
-                setClients(response.data);
-            }
+            setClients(response);
         } catch (error) {
             console.error(
                 "Error al obtener datos actualizados del cliente:",

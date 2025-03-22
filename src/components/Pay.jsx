@@ -18,6 +18,7 @@ import { AttachMoney as AttachMoneyIcon } from "@mui/icons-material";
 import { getBsToUsd, getInvoices, getUsdToBs } from "../auxiliar/auxFunctions";
 import authService from "../services/AuthService";
 import axios from "axios";
+import { HOST_API } from "../env";
 
 export default function Pay({
     client,
@@ -107,18 +108,25 @@ export default function Pay({
                 tipoPago: paymentData.tipoPago,
                 clientesId: client.id,
                 referencia: paymentData.referencia,
-                facturaId: paymentData.facturaId,
             };
 
             if (paymentData.comentario) {
                 Payment.comentario = paymentData.comentario;
             }
 
-            console.log(Payment);
-            // Aquí iría la llamada a la API para guardar el pago
-            // await axios.post(`${client.api}/paysClient0`, Payment);
+            if (paymentData.facturaId) {
+                await axios.post(
+                    `${HOST_API}/paysClient0/factura/${paymentData.facturaId}`,
+                    Payment
+                );
+            } else {
+                await axios.post(`${HOST_API}/paysClient0`, Payment);
+            }
 
             showSnackbar("Pago registrado correctamente");
+            await getInvoices(client.id).then((invoices) =>
+                setInvoices(invoices)
+            );
             handleCancel();
 
             // Actualizar datos del cliente
@@ -133,7 +141,6 @@ export default function Pay({
 
     useEffect(() => {
         authService.profiles().then((profiles) => setProfiles(profiles));
-
         getInvoices(client.id).then((invoices) => setInvoices(invoices));
     }, [client.id]);
     return (
@@ -150,35 +157,37 @@ export default function Pay({
                 </DialogContentText>
 
                 <Grid container spacing={2}>
-                    <Grid item xs={12}>
-                        <FormControl fullWidth margin="dense">
-                            <InputLabel id="factura-id-label">
-                                Factura
-                            </InputLabel>
-                            <Select
-                                labelId="factura-id-label"
-                                id="facturaId"
-                                value={paymentData.facturaId}
-                                label="Factura"
-                                onChange={(e) =>
-                                    setPaymentData({
-                                        ...paymentData,
-                                        facturaId: e.target.value,
-                                    })
-                                }
-                            >
-                                {invoices.map((invoice) => (
-                                    <MenuItem
-                                        key={invoice.id}
-                                        value={invoice.id}
-                                    >
-                                        {invoice.motivo} - Deuda:{" "}
-                                        {invoice.deuda.toFixed(2)}
-                                    </MenuItem>
-                                ))}
-                            </Select>
-                        </FormControl>
-                    </Grid>
+                    {invoices.length > 0 && (
+                        <Grid item xs={12}>
+                            <FormControl fullWidth margin="dense">
+                                <InputLabel id="factura-id-label">
+                                    Factura
+                                </InputLabel>
+                                <Select
+                                    labelId="factura-id-label"
+                                    id="facturaId"
+                                    value={paymentData.facturaId}
+                                    label="Factura"
+                                    onChange={(e) =>
+                                        setPaymentData({
+                                            ...paymentData,
+                                            facturaId: e.target.value,
+                                        })
+                                    }
+                                >
+                                    {invoices.map((invoice) => (
+                                        <MenuItem
+                                            key={invoice.id}
+                                            value={invoice.id}
+                                        >
+                                            {invoice.motivo} - Deuda:{" "}
+                                            {invoice.deuda.toFixed(2)}
+                                        </MenuItem>
+                                    ))}
+                                </Select>
+                            </FormControl>
+                        </Grid>
+                    )}
                     <Grid item xs={12} sm={6}>
                         <Button
                             variant="contained"
