@@ -3,6 +3,7 @@ import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { ThemeProvider, createTheme } from '@mui/material/styles';
 import { CssBaseline, CircularProgress, Box } from '@mui/material';
 import ProtectedRoute from './components/ProtectedRoute';
+import { ClientListProvider } from './context/ClientListProvider';
 
 // Lazy loading para mejorar el rendimiento
 const Login = lazy(() => import('./components/Login'));
@@ -41,23 +42,25 @@ function App() {
 	return (
 		<ThemeProvider theme={theme}>
 			<CssBaseline />
-			<BrowserRouter>
-				<Suspense fallback={<LoadingFallback />}>
-					<Routes>
-						<Route path='/login' element={<Login />} />
-						<Route
-							path='/search'
-							element={
-								<ProtectedRoute>
-									<SearchClient />
-								</ProtectedRoute>
-							}
-						/>
-						<Route path='/' element={<Navigate to='/login' />} />
-						<Route path='*' element={<Navigate to='/login' />} />
-					</Routes>
-				</Suspense>
-			</BrowserRouter>
+			<ClientListProvider>
+				<BrowserRouter>
+					<Suspense fallback={<LoadingFallback />}>
+						<Routes>
+							<Route path='/login' element={<Login />} />
+							<Route
+								path='/search'
+								element={
+									<ProtectedRoute>
+										<SearchClient />
+									</ProtectedRoute>
+								}
+							/>
+							<Route path='/' element={<Navigate to='/login' />} />
+							<Route path='*' element={<Navigate to='/login' />} />
+						</Routes>
+					</Suspense>
+				</BrowserRouter>
+			</ClientListProvider>
 		</ThemeProvider>
 	);
 }

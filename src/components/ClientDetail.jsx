@@ -38,13 +38,16 @@ import {
 import axios from "axios";
 import Pay from "./Pay";
 import { getClient } from "../auxiliar/auxFunctions";
+import { CLIENTS } from "../config/clients";
+import { useClientList } from "../hooks/useClientList";
 
-const ClientDetail = ({ client, onNewSearch, setClients, api }) => {
+const ClientDetail = ({ client, onNewSearch, setClients }) => {
     // Estados para modales
     const [paymentModalOpen, setPaymentModalOpen] = useState(false);
     const [confirmSuspendOpen, setConfirmSuspendOpen] = useState(false);
     const [changingStatus, setChangingStatus] = useState(false);
     const [sendingPayment, setSendingPayment] = useState(false);
+    const { clientList } = useClientList();
 
     // Estados para SnackBars
     const [snackbar, setSnackbar] = useState({
@@ -55,7 +58,7 @@ const ClientDetail = ({ client, onNewSearch, setClients, api }) => {
 
     const refreshClientData = async () => {
         try {
-            const response = await getClient(client.identificacion);
+            const response = await getClient(client.identificacion, clientList);
 
             setClients(response);
         } catch (error) {
@@ -101,7 +104,7 @@ const ClientDetail = ({ client, onNewSearch, setClients, api }) => {
                 client.estado === "Activo" ? "Suspendido" : "Activo";
 
             await axios.patch(
-                `${api}/clientes/${client.id}`,
+                `${CLIENTS[clientList].url}/clientes/${client.id}`,
                 { estado: newStatus },
                 {
                     headers: { Authorization: `Bearer ${token}` },
@@ -123,17 +126,19 @@ const ClientDetail = ({ client, onNewSearch, setClients, api }) => {
     const handleSendLastPayment = async () => {
         try {
             setSendingPayment(true);
-            const res = await axios.get(`${api}/client/${client.id}/lastPay`, {
-                headers: {
-                    Authorization: `Bearer ${localStorage.getItem("token")}`,
-                },
-            });
 
-            await axios.get(`${api}/send-pay/${res.data[0].id}`, {
-                headers: {
-                    Authorization: `Bearer ${localStorage.getItem("token")}`,
-                },
-            });
+            const res = await axios.get(
+                `${CLIENTS[clientList].url}/client/${client.id}/lastPay`
+            );
+
+            if (res.data.length === 0) {
+                showSnackbar("No hay pagos para enviar");
+                return;
+            }
+
+            await axios.get(
+                `${CLIENTS[clientList].url}/send-pay/${res.data[0].id}`
+            );
 
             showSnackbar("Comprobante enviado al cliente correctamente");
         } catch (error) {
@@ -366,7 +371,6 @@ const ClientDetail = ({ client, onNewSearch, setClients, api }) => {
                 handleClosePaymentModal={handleClosePaymentModal}
                 showSnackbar={showSnackbar}
                 refreshClientData={refreshClientData}
-                api={api}
             />
 
             {/* Diálogo de confirmación para suspender/activar */}

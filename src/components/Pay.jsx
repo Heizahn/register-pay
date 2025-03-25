@@ -18,7 +18,8 @@ import { AttachMoney as AttachMoneyIcon } from "@mui/icons-material";
 import { getBsToUsd, getInvoices, getUsdToBs } from "../auxiliar/auxFunctions";
 import authService from "../services/AuthService";
 import axios from "axios";
-import { HOST_API } from "../env";
+import { useClientList } from "../hooks/useClientList";
+import { CLIENTS } from "../config/clients";
 
 export default function Pay({
     client,
@@ -32,6 +33,7 @@ export default function Pay({
     const [loadingUsdToBs, setLoadingUsdToBs] = useState(false);
     const [profiles, setProfiles] = useState([]);
     const [invoices, setInvoices] = useState([]);
+    const { clientList } = useClientList();
 
     // Estado para formulario de pago
     const [paymentData, setPaymentData] = useState({
@@ -116,33 +118,37 @@ export default function Pay({
 
             if (paymentData.facturaId) {
                 await axios.post(
-                    `${HOST_API}/paysClient0/factura/${paymentData.facturaId}`,
+                    `${CLIENTS[clientList].url}/paysClient0/factura/${paymentData.facturaId}`,
                     Payment
                 );
             } else {
-                await axios.post(`${HOST_API}/paysClient0`, Payment);
+                await axios.post(
+                    `${CLIENTS[clientList].url}/paysClient0`,
+                    Payment
+                );
             }
 
             showSnackbar("Pago registrado correctamente");
-            await getInvoices(client.id).then((invoices) =>
+            await getInvoices(client.id, clientList).then((invoices) =>
                 setInvoices(invoices)
             );
             handleCancel();
-
-            // Actualizar datos del cliente
-            await refreshClientData();
         } catch (error) {
             console.error("Error registrando el pago:", error);
             showSnackbar("Error al registrar el pago", error.message);
         } finally {
             setSendingPayment(false);
+
+            await refreshClientData();
         }
     };
 
     useEffect(() => {
         authService.profiles().then((profiles) => setProfiles(profiles));
-        getInvoices(client.id).then((invoices) => setInvoices(invoices));
-    }, [client.id]);
+        getInvoices(client.id, clientList).then((invoices) =>
+            setInvoices(invoices)
+        );
+    }, [client.id, clientList]);
     return (
         <Dialog
             open={paymentModalOpen}

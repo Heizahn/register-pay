@@ -12,6 +12,10 @@ import {
     AppBar,
     Toolbar,
     Tooltip,
+    FormControl,
+    Select,
+    MenuItem,
+    InputLabel,
 } from "@mui/material";
 import {
     Search as SearchIcon,
@@ -20,11 +24,11 @@ import {
     Assignment as DocumentIcon,
 } from "@mui/icons-material";
 import { useNavigate } from "react-router-dom";
-import { HOST_API } from "../env";
 import ClientDetail from "../components/ClientDetail";
 import BCVDay from "./BCVDay";
 import authService from "../services/AuthService";
 import { getClient } from "../auxiliar/auxFunctions";
+import { useClientList } from "../hooks/useClientList";
 
 const SearchClient = () => {
     const [identificacion, setIdentificacion] = useState("");
@@ -32,6 +36,7 @@ const SearchClient = () => {
     const [clients, setClients] = useState([]);
     const [error, setError] = useState("");
     const [searching, setSearching] = useState(false);
+    const { clientList, handleClientChange } = useClientList();
 
     const navigate = useNavigate();
 
@@ -39,7 +44,7 @@ const SearchClient = () => {
         e?.preventDefault();
 
         if (!identificacion) {
-            setError("Por favor ingrese una cédula o identificación");
+            setError("Por favor ingrese un nombre, cédula o identificación");
             return;
         }
 
@@ -49,10 +54,10 @@ const SearchClient = () => {
         setError("");
 
         try {
-            const response = await getClient(identificacion);
+            const response = await getClient(identificacion, clientList);
 
             if (response.length === 0) {
-                setError("No se encontraron clientes con esa identificación");
+                setError("No se encontraron clientes con esa búsqueda");
                 return;
             }
 
@@ -117,14 +122,35 @@ const SearchClient = () => {
                     }}
                 >
                     <BCVDay />
-                    <Typography
-                        component="h1"
-                        variant="h5"
-                        align="center"
-                        sx={{ mb: 3 }}
+                    <Box
+                        sx={{
+                            display: "flex",
+                            justifyContent: "space-between",
+                            alignItems: "center",
+                            mb: 3,
+                        }}
                     >
-                        Búsqueda de Cliente por Cédula
-                    </Typography>
+                        <Typography component="h1" variant="h5" align="center">
+                            Búsqueda de cliente
+                        </Typography>
+                        <FormControl sx={{ minWidth: 160 }} margin="dense">
+                            <InputLabel id="client-select">
+                                Lista de clientes
+                            </InputLabel>
+                            <Select
+                                labelId="client-select"
+                                id="demo-simple-select"
+                                value={clientList}
+                                label="Lista de clientes"
+                                onChange={(e) =>
+                                    handleClientChange(e.target.value)
+                                }
+                            >
+                                <MenuItem value="ABDO77">ABDO77</MenuItem>
+                                <MenuItem value="Gianni">Gianni</MenuItem>
+                            </Select>
+                        </FormControl>
+                    </Box>
 
                     <Box
                         component="form"
@@ -134,7 +160,7 @@ const SearchClient = () => {
                         <TextField
                             fullWidth
                             id="identificacion"
-                            label="Cédula o Télefono"
+                            label="Nombre, Cédula o Télefono"
                             variant="outlined"
                             value={identificacion}
                             onChange={(e) => setIdentificacion(e.target.value)}

@@ -1,6 +1,6 @@
 import axios from "axios";
 import { getBCV } from "../services/BCVService";
-import { HOST_API } from "../env";
+import { CLIENTS } from "../config/clients";
 
 export async function getBsToUsd(montoBs) {
     const bcv = await getBCV();
@@ -14,9 +14,11 @@ export async function getUsdToBs(montoUsd) {
     return (montoUsd * (bcv * 1.08).toFixed(4)).toFixed(2);
 }
 
-export async function getClient(str) {
+export async function getClient(str, clientList) {
     try {
-        const response = await axios.get(`${HOST_API}/clientByIdentity/${str}`);
+        const response = await axios.get(
+            `${CLIENTS[clientList].url}/clientByIdentity/${str}`
+        );
 
         if (!response.data) {
             return [];
@@ -29,9 +31,11 @@ export async function getClient(str) {
     }
 }
 
-export async function getInvoices(id) {
+export async function getInvoices(id, clientList) {
     try {
-        const response = await axios.get(`${HOST_API}/clients/${id}/bills`);
+        const response = await axios.get(
+            `${CLIENTS[clientList].url}/clients/${id}/bills`
+        );
         return response.data;
     } catch (error) {
         console.error("Error al buscar facturas:", error);
