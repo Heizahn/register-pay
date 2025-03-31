@@ -11,7 +11,7 @@ export default function PricePanel({ bcvData }) {
 	const dollarPrice = bcvData?.precio || 0;
 	const fecha = bcvData?.fecha || 'No disponible';
 
-	// Cálculo de precios (con IVA 8%)
+	// Cálculo de precios (con 8%)
 	const precioBasico = dollarPrice ? (20 * 1.08 * dollarPrice).toFixed(2) : '0.00';
 	const precioEstandar = dollarPrice ? (25 * 1.08 * dollarPrice).toFixed(2) : '0.00';
 	const premioPremium = dollarPrice ? (30 * 1.08 * dollarPrice).toFixed(2) : '0.00';
@@ -67,7 +67,7 @@ export default function PricePanel({ bcvData }) {
 
 					<Grid item xs={12} md={8}>
 						<Typography variant='subtitle2' color='text.secondary' sx={{ mb: 1 }}>
-							Precios de Planes (IVA 8% incluido)
+							Precios de Planes
 						</Typography>
 						<Grid container spacing={1}>
 							<Grid item xs={4}>
